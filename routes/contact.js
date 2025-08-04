@@ -26,19 +26,27 @@ router.post('/', async (req, res) => {
     const contact = new Contact(req.body);
     await contact.save();
 
-    // Email Notification
+    // Respond quickly to frontend
+    res.status(200).json({ success: true });
+
+    // Send email in background
     const mailOptions = {
-      from: 'ephremderesso@hahutechsolutions.com',
+      from: process.env.EMAIL_USER,
       to: 'info@hahutechsolutions.com',
       subject: 'New Contact Form Submission',
       text: `Name: ${contact.name}\nEmail: ${contact.email}\nMessage: ${contact.message}`
     };
 
-    await transporter.sendMail(mailOptions);
+    transporter.sendMail(mailOptions, (err) => {
+      if (err) {
+        console.error('Email sending failed:', err);
+      } else {
+        console.log('Email sent successfully.');
+      }
+    });
 
-    res.status(200).json({ success: true });
   } catch (error) {
-    console.error('MongoDB or Email Error:', error);
+    console.error('MongoDB Error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
