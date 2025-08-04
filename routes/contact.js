@@ -39,14 +39,27 @@ router.post('/', async (req, res) => {
 
     transporter.sendMail(mailOptions, (err) => {
       if (err) {
-        console.error('Email sending failed:', err);
+        console.error('Email sending failed:', JSON.stringify(err, null, 2));
+
+        // Retry once after 3 seconds
+        console.log("Retrying email send in 3 seconds...");
+        setTimeout(() => {
+          transporter.sendMail(mailOptions, (retryErr) => {
+            if (retryErr) {
+              console.error("Retry failed:", JSON.stringify(retryErr, null, 2));
+            } else {
+              console.log("Email sent successfully on retry.");
+            }
+          });
+        }, 3000);
+
       } else {
-        console.log('Email sent successfully.');
+        console.log("Email sent successfully on first attempt.");
       }
     });
 
   } catch (error) {
-    console.error('MongoDB Error:', error);
+    console.error('MongoDB or Email Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
