@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
     const contact = new Contact(req.body);
     await contact.save();
 
-    // Respond quickly to frontend
+    // Respond to frontend immediately
     res.status(200).json({ success: true });
 
     // Send email in background
